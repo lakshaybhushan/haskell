@@ -18,6 +18,7 @@ valAtRoot :: Tree a -> Maybe a
 valAtRoot Empty = Nothing
 valAtRoot (Node value _ _) = Just value
 
+
 ------------------------------------------------------------------------------
 -- Ex 2: compute the size of a tree, that is, the number of Node
 -- constructors in it
