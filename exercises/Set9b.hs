@@ -47,10 +47,10 @@ type Col   = Int
 type Coord = (Row, Col)
 
 nextRow :: Coord -> Coord
-nextRow (i,j) = todo
+nextRow (i, j) = (i + 1, 1)
 
 nextCol :: Coord -> Coord
-nextCol (i,j) = todo
+nextCol (i, k) = (i, k + 1)
 
 --------------------------------------------------------------------------------
 -- Ex 2: Implement the function prettyPrint that, given the size of
@@ -103,7 +103,8 @@ nextCol (i,j) = todo
 type Size = Int
 
 prettyPrint :: Size -> [Coord] -> String
-prettyPrint = todo
+prettyPrint n qs = unlines [ [ if (r, c) `elem` qs then 'Q' else '.' | c <- [1..n] ] | r <- [1..n] ]
+
 
 --------------------------------------------------------------------------------
 -- Ex 3: The task in this exercise is to define the relations sameRow, sameCol,
@@ -126,17 +127,17 @@ prettyPrint = todo
 --   sameAntidiag (2,10) (5,7) ==> True
 --   sameAntidiag (500,5) (5,500) ==> True
 
-sameRow :: Coord -> Coord -> Bool
-sameRow (i,j) (k,l) = todo
+sameRow :: (Int, Int) -> (Int, Int) -> Bool
+sameRow (i1, j1) (i2, j2) = i1 == i2
 
-sameCol :: Coord -> Coord -> Bool
-sameCol (i,j) (k,l) = todo
+sameCol :: (Int, Int) -> (Int, Int) -> Bool
+sameCol (i1, j1) (i2, j2) = j1 == j2
 
-sameDiag :: Coord -> Coord -> Bool
-sameDiag (i,j) (k,l) = todo
+sameDiag :: (Int, Int) -> (Int, Int) -> Bool
+sameDiag (i1, j1) (i2, j2) = i1 - j1 == i2 - j2
 
-sameAntidiag :: Coord -> Coord -> Bool
-sameAntidiag (i,j) (k,l) = todo
+sameAntidiag :: (Int, Int) -> (Int, Int) -> Bool
+sameAntidiag (i1, j1) (i2, j2) = i1 + j1 == i2 + j2
 
 --------------------------------------------------------------------------------
 -- Ex 4: In chess, a queen may capture another piece in the same row, column,
@@ -191,7 +192,8 @@ type Candidate = Coord
 type Stack     = [Coord]
 
 danger :: Candidate -> Stack -> Bool
-danger = todo
+danger (r, c) qs = any (\(qr, qc) -> qr == r || qc == c || abs (qr - r) == abs (qc - c)) qs
+
 
 --------------------------------------------------------------------------------
 -- Ex 5: In this exercise, the task is to write a modified version of
@@ -226,7 +228,7 @@ danger = todo
 -- solution to this version. Any working solution is okay in this exercise.)
 
 prettyPrint2 :: Size -> Stack -> String
-prettyPrint2 = todo
+prettyPrint2 n qs = unlines [ [ if (r, c) `elem` qs then 'Q' else if danger (r, c) qs then '#' else '.' | c <- [1..n] ] | r <- [1..n] ]
 
 --------------------------------------------------------------------------------
 -- Ex 6: Now that we can check if a piece can be safely placed into a square in
@@ -271,7 +273,11 @@ prettyPrint2 = todo
 --     Q#######
 
 fixFirst :: Size -> Stack -> Maybe Stack
-fixFirst n s = todo
+fixFirst n ((r, c):qs)
+    | c > n = Nothing
+    | danger (r, c) qs = fixFirst n ((r, c + 1):qs)
+    | otherwise = Just ((r, c):qs)
+fixFirst _ [] = Nothing
 
 --------------------------------------------------------------------------------
 -- Ex 7: We need two helper functions for stack management.
@@ -293,10 +299,12 @@ fixFirst n s = todo
 -- Hint: Remember nextRow and nextCol? Use them!
 
 continue :: Stack -> Stack
-continue s = todo
+continue s = nextRow (head s) : s
 
 backtrack :: Stack -> Stack
-backtrack s = todo
+backtrack (x:xs) = nextCol (head xs) : tail xs
+backtrack [] = []
+
 
 --------------------------------------------------------------------------------
 -- Ex 8: Let's take a step. Our algorithm solves the problem (in a
@@ -365,7 +373,10 @@ backtrack s = todo
 --     step 8 [(6,1),(5,4),(4,2),(3,5),(2,3),(1,1)] ==> [(5,5),(4,2),(3,5),(2,3),(1,1)]
 
 step :: Size -> Stack -> Stack
-step = todo
+step n s = case fixFirst n s of
+    Just s' -> continue s'
+    Nothing -> backtrack s
+
 
 --------------------------------------------------------------------------------
 -- Ex 9: Let's solve our puzzle! The function finish takes a partial
@@ -380,7 +391,10 @@ step = todo
 -- solve the n queens problem.
 
 finish :: Size -> Stack -> Stack
-finish = todo
+finish n s
+    | length s == n + 1 = tail s
+    | otherwise = finish n (step n s)
 
 solve :: Size -> Stack
 solve n = finish n [(1,1)]
+
